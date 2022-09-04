@@ -1,10 +1,10 @@
 # ExpressApi
 
 ## Class:
-- [x] Server
-- [ ] Mysql
-- [x] JsonToken
-- [x] WebSocket
+- Server
+- Mysql
+- JsonToken
+- WebSocket
 
 ## Functions:
 - request
