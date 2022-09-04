@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const http = require("http");
 const mime = require('mime');
 const CryptoJS = require("crypto-js");
+const WebSocketServer = require('ws');
 
 class Server{
     constructor(host = "localhost", port = 3000, endpoint = ""){
@@ -213,9 +214,32 @@ class JsonToken{
     }
 }
 
+class WebSocket{
+    constructor(port, callback){
+        this.ws = new WebSocketServer.Server({ port: port });
+
+        this.ws.sockets = [];
+        this.ws.on('connection', function (socket) {
+            this.sockets.push(socket);
+
+            socket.on('message', async function (data) {
+                callback(this, data.toString());
+            });
+
+            socket.on('close', function () {
+                this.sockets = this.sockets.filter(s => s !== socket);
+            });
+        });
+
+        console.log("WebSocket is running on port: " + port + " ...");
+    }
+}
+
 module.exports.Server = Server;
 module.exports.Mysql = Mysql;
 module.exports.JsonToken = JsonToken;
+module.exports.WebSocket = WebSocket;
+
 
 module.exports.request = function(url = "http://www.exemple.com/", options = null, callback = null){
     url
@@ -262,3 +286,8 @@ module.exports.encodeBody = function(dic){
     }
     return body.join("&");
 }
+
+module.exports.sha256 = function(text){ return CryptoJS.SHA256(text); }
+module.exports.sha512 = function(text){ return CryptoJS.SHA512(text); }
+module.exports.b64UrlEncode = function(text){ return CryptoJS.enc.Base64url.stringify(CryptoJS.enc.Utf8.parse(text)); }
+module.exports.b64UrlDecode = function(text){ return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64url.parse(text)); }
