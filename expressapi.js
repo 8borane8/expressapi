@@ -3,6 +3,7 @@ const mysql = require("mysql");
 const fs = require("node:fs");
 const http = require("http");
 const mime = require('mime');
+const CryptoJS = require("crypto-js");
 
 class Server{
     constructor(host = "localhost", port = 3000, endpoint = ""){
@@ -161,7 +162,62 @@ class Server{
     }
 }
 
-function request(url = "http://www.exemple.com/", options = null, callback = null){
+class Mysql{
+    constructor(options){
+        this.options = options;
+        this.conn = mysql.createConnection(this.options);
+
+        this.conn.connect();
+        setInterval(this.saveConn, 10000);
+    }
+
+    async query(sql, options){
+        return new Promise((resolve, reject) => {
+            this.conn.query(sql, options, function(err, results){
+                return err ? reject(err) : resolve(results);
+                }
+            );
+        });
+    }
+
+    saveConn(){
+        this.conn.query("SELECT 1");
+    }
+}
+
+class JsonToken{
+    constructor(secret){
+        this.secret = secret;
+    }
+
+    sign(payload){
+        let encoded_payload = CryptoJS.enc.Utf8.parse(JSON.stringify(payload));
+        encoded_payload = CryptoJS.enc.Base64url.stringify(encoded_payload);
+
+        return encoded_payload + "." + CryptoJS.SHA256(encoded_payload + this.secret)
+    }
+
+    verif(token){
+        try{
+            let decoded_token = CryptoJS.enc.Base64url.parse(token.split(".")[0]);
+            decoded_token = JSON.parse(CryptoJS.enc.Utf8.stringify(decoded_token));
+            if(CryptoJS.SHA256(token.split(".")[0] + this.secret) == token.split(".")[1]){
+                return decoded_token;
+            }
+
+            return null;
+        }catch(err){
+            console.log(err);
+            return null;
+        }
+    }
+}
+
+module.exports.Server = Server;
+module.exports.Mysql = Mysql;
+module.exports.JsonToken = JsonToken;
+
+module.exports.request = function(url = "http://www.exemple.com/", options = null, callback = null){
     url
     options = options == null ? {
         method: 'GET',
@@ -179,6 +235,10 @@ function request(url = "http://www.exemple.com/", options = null, callback = nul
                 if(callback != null){ callback(data); }
                 resolve(data);
             });
+
+            response.on('error', function (error) {
+                reject(error);
+            });
         }
         var req;
         try{
@@ -195,27 +255,6 @@ function request(url = "http://www.exemple.com/", options = null, callback = nul
     });
 }
 
-class Mysql{
-    constructor(options){
-        this.options = options;
-        this.conn = mysql.createConnection(this.options);
-
-        this.conn.connect();
-    }
-
-    async query(sql, options){
-        return new Promise((resolve, reject) => {
-            this.conn.query(sql, options, function(err, results){
-                return err ? reject(err) : resolve(results);
-                }
-            );
-        });
-    }
-}
-
-module.exports.Server = Server;
-module.exports.request = request;
-module.exports.Mysql = Mysql;
 module.exports.encodeBody = function(dic){
     let body = [];
     for(let property of Object.keys(dic)){
