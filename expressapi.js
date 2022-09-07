@@ -104,6 +104,7 @@ class Server{
                 }
                 req.url = req.url.split("?")[0];
             }
+
             if(this.this.routes[req.method.toLowerCase()][req.url] == undefined){
                 if(this.this.routes[req.method.toLowerCase()][req.url + "/"] == undefined){
                     let final_url = "";
@@ -134,14 +135,11 @@ class Server{
                                 req.params = {};
                                 break;
                             }
+                            if(final_url != ""){ return this.this.routes[req.method.toLowerCase()][final_url](req, res);}
                         }
                         
                     }
-                    if(final_url != ""){
-                        this.this.routes[req.method.toLowerCase()][final_url](req, res);
-                    }else{
-                        res.status(404).send({ success: false, error: "Endpoint not found !" });
-                    }
+                    res.status(404).send({ success: false, error: "Endpoint not found !" });
                 }else{
                     this.this.routes[req.method.toLowerCase()][req.url + "/"](req, res);
                 }
@@ -169,7 +167,7 @@ class Mysql{
         this.conn = mysql.createConnection(this.options);
 
         this.conn.connect();
-        setInterval(this.saveConn, 10000);
+        setInterval(this.saveConn.bind(this), 1000);
     }
 
     async query(sql, options){
@@ -182,7 +180,7 @@ class Mysql{
     }
 
     saveConn(){
-        this.conn.query("SELECT 1");
+        this.conn.query("SELECT 1", function(){});
     }
 }
 
@@ -287,7 +285,26 @@ module.exports.encodeBody = function(dic){
     return body.join("&");
 }
 
-module.exports.sha256 = function(text){ return CryptoJS.SHA256(text); }
-module.exports.sha512 = function(text){ return CryptoJS.SHA512(text); }
+module.exports.isEmpty = function(str){
+    try{
+        if(str.replaceAll(" ", "") == ""){
+            return true;
+        }else if(str.replaceAll("   ", "") == ""){
+            return true;
+        }else if(str.replaceAll("ㅤ", "") == ""){
+            return true;
+        }else if(str == undefined){
+            return true;
+        }else if(str == null){
+            return true;
+        }
+        return false;
+    }catch{
+        return true
+    }
+}
+
+module.exports.sha256 = function(text){ return CryptoJS.SHA256(text).toString(); }
+module.exports.sha512 = function(text){ return CryptoJS.SHA512(text).toString(); }
 module.exports.b64UrlEncode = function(text){ return CryptoJS.enc.Base64url.stringify(CryptoJS.enc.Utf8.parse(text)); }
 module.exports.b64UrlDecode = function(text){ return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64url.parse(text)); }
