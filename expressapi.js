@@ -10,7 +10,7 @@ class Server{
     constructor(host = "localhost", port = 3000, endpoint = ""){
         this.host = host;
         this.port = port;
-        this.endpoint = endpoint
+        this.endpoint = endpoint;
 
         this.routes = {
             "get": {},
@@ -152,8 +152,8 @@ class Server{
         });
     }
 
-    listen(fnc = function(){ console.log("Server listening ..."); }){
-        this.server.listen(this.port, this.host, this.listenCallback, fnc);
+    listen(fnc = function(){ console.log(`Server listening on: http://${this.host}:${this.port}/${this.endpoint}`); }){
+        this.server.listen(this.port, this.host, this.listenCallback, fnc.bind(this));
     }
 
     updateConfig(){
@@ -240,7 +240,6 @@ module.exports.WebSocket = WebSocket;
 
 
 module.exports.request = function(url = "http://www.exemple.com/", options = null, callback = null){
-    url
     options = options == null ? {
         method: 'GET',
         headers: {}
@@ -266,7 +265,7 @@ module.exports.request = function(url = "http://www.exemple.com/", options = nul
         try{
             req = http.request(url, options, default_callback);
         }catch{
-            req = https.request(url, options, default_callback)
+            req = https.request(url, options, default_callback);
         }
             
         if(options.body != undefined){
@@ -287,20 +286,22 @@ module.exports.encodeBody = function(dic){
 
 module.exports.isEmpty = function(str){
     try{
-        if(str.replaceAll(" ", "") == ""){
+        if(str == undefined){
+            return true;
+        }else if(str == null){
+            return true;
+        }else if(typeof str != String){
+            return true;
+        }else if(str.replaceAll(" ", "") == ""){
             return true;
         }else if(str.replaceAll("   ", "") == ""){
             return true;
         }else if(str.replaceAll("ㅤ", "") == ""){
             return true;
-        }else if(str == undefined){
-            return true;
-        }else if(str == null){
-            return true;
         }
         return false;
     }catch{
-        return true
+        return true;
     }
 }
 
