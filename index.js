@@ -7,7 +7,7 @@ const CryptoJS = require("crypto-js");
 const WebSocketServer = require('ws');
 
 class Server{
-    constructor(host = "localhost", port = 3000, endpoint = ""){
+    constructor(host = "0.0.0.0", port = 3000, endpoint = ""){
         this.host = host;
         this.port = port;
         this.endpoint = endpoint;
