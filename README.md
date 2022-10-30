@@ -41,7 +41,7 @@ api.listen();
 ```
     request =>
     encodeBody =>
-    isEmpty =>
+    escapeWhiteSpaceAndNullValues =>
     sha256 =>
     sha512 =>
     b64UrlEncode =>
