@@ -1,27 +1,27 @@
 {
-  "name": "@borane/expressapi",
-  "version": "1.0.3",
-  "description": "ExpressApi est une alternative simple d'utilisation et performante a express ou des frameworks similaires, il ajoute de plus pleins de fonctions utiles pour vos projets web !",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "Express",
-    "Api",
-    "Web",
-    "Back",
-    "Jwt",
-    "Mysql",
-    "Framework"
-  ],
-  "author": "Borane#9999",
-  "license": "ISC",
-  "dependencies": {
-    "crypto-js": "^4.1.1",
-    "mime": "^3.0.0",
-    "mysql": "^2.18.1",
-    "ws": "^8.9.0"
-  },
-  "homepage": "https://github.com/8borane8/expressapi"
+    "name": "@borane/expressapi",
+    "version": "1.0.4",
+    "description": "ExpressApi est une alternative simple d'utilisation et performante a express ou des frameworks similaires, il ajoute de plus pleins de fonctions utiles pour vos projets web !",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "Express",
+        "Api",
+        "Web",
+        "Back",
+        "Jwt",
+        "Mysql",
+        "Framework"
+    ],
+    "author": "Borane#9999",
+    "license": "ISC",
+    "dependencies": {
+        "crypto-js": "^4.1.1",
+        "mime": "^3.0.0",
+        "mysql": "^2.18.1",
+        "ws": "^8.9.0"
+    },
+    "homepage": "https://github.com/8borane8/expressapi"
 }
