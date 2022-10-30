@@ -284,23 +284,19 @@ module.exports.encodeBody = function(dic){
     return body.join("&");
 }
 
-module.exports.isEmpty = function(str){
+module.exports.escapeWhiteSpaceAndNullValues = function(arg){
     try{
-        if(str == undefined){
-            return true;
-        }else if(str == null){
-            return true;
-        }else if(typeof str != String){
-            return true;
-        }else if(str.replaceAll(" ", "") == ""){
-            return true;
-        }else if(str.replaceAll("   ", "") == ""){
-            return true;
-        }else if(str.replaceAll("ㅤ", "") == ""){
-            return true;
+        if(arg == undefined){
+            return "";
+        }else if(arg == null){
+            return "";
+        }else if(typeof arg != "string"){
+            return argToString(arg.toString());
         }
-        return false;
-    }catch{
+
+        return arg.replaceAll(" ", "").replaceAll("ㅤ", "");
+    }catch(err){
+        console.log(err)
         return true;
     }
 }
