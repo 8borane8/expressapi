@@ -173,7 +173,7 @@ class Mysql{
     async query(sql, options){
         return new Promise((resolve, reject) => {
             this.conn.query(sql, options, function(err, results){
-                return err ? reject(err) : resolve(results);
+                return err ? resolve(err) : resolve(results);
                 }
             );
         });
