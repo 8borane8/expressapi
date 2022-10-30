@@ -6,7 +6,7 @@ ExpressApi est une alternative simple d'utilisation et performante a express ou 
 ## Exemple
 
 ```js
-const expressapi = require("./expressapi.js");
+const expressapi = require("@borane/expressapi");
 const config = require("./config.json");
 const fs = require("node:fs");
 
@@ -19,7 +19,7 @@ const mysql = new expressapi.Mysql({
 });
 
 api.get("/", async function(req, res){
-    res.status(200).sendFile(`./pages/index.html`);
+    res.status(200).send("Welcome to ExpressApi");
 });
 
 for(let route of fs.readdirSync("./routes").filter(r => r.endsWith(".js"))){
