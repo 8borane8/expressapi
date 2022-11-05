@@ -7,10 +7,15 @@ const CryptoJS = require("crypto-js");
 const WebSocketServer = require('ws');
 
 class Server{
-    constructor(port = 3000, endpoint = "", host = "0.0.0.0", sllKey = null, sllCert = null){
+    constructor(port = 3000, endpoint = "", host = "0.0.0.0", sslKey = null, sslCert = null){
         this.host = host;
         this.port = port;
         this.endpoint = endpoint;
+        this.sslKey = sslKey;
+        this.sslCert = sslCert;
+        this.notFoundEndpointFunction = function(req, res){
+            return res.status(404).send({ success: false, error: "Endpoint not found !" });
+        }
 
         if(!this.endpoint.startsWith("/")){ this.endpoint = "/" + this.endpoint; }
         while(this.endpoint.endsWith("/")){ this.endpoint = this.endpoint.slice(0, -1); }
@@ -22,10 +27,10 @@ class Server{
         };
         this.middlewares = [];
 
-        if(sllKey != null && sllCert != null){
+        if(this.sslKey != null && this.sslCert != null){
             this.server = https.createServer(this.requestListener, {
-                key, sslKey,
-                cert: sllCert
+                key: this.sslKey,
+                cert: this.sslCert
             });
         }else{
             this.server = http.createServer(this.requestListener);
@@ -66,6 +71,11 @@ class Server{
         this.server.this = this;
     }
 
+    setNotFoundEndpointFunction(fnc){
+        this.notFoundEndpointFunction = fnc;
+        this.server.this = this;
+    }
+
     requestListener(req, res){
         req.body = [];
         req.on('error', (err) => {
@@ -83,16 +93,23 @@ class Server{
 
             res.send = function(content){
                 if(content.constructor === ({}).constructor){
-                    res.setHeader("Content-Type", "application/json")
+                    res.setHeader("Content-Type", "application/json");
                     res.end(JSON.stringify(content));
                 }else{
                     res.end(content);
                 }
             };
+
+            res.redirect = function(url){
+                res.writeHead(302, {
+                    'Location': url
+                });
+                res.end();
+            };
     
             res.sendFile = function(path){
-                res.setHeader("Content-Type", mime.getType(path))
-                res.setHeader("Content-Length", fs.statSync(path).size)
+                res.setHeader("Content-Type", mime.getType(path));
+                res.setHeader("Content-Length", fs.statSync(path).size);
     
                 fs.createReadStream(path).pipe(res);
             }
@@ -145,11 +162,11 @@ class Server{
                 if(isValid){ return routes[endpoint](req, res); }
             }
             
-            return res.status(404).send({ success: false, error: "Endpoint not found !" });
+            this.this.notFoundEndpointFunction(req, res);
         });
     }
 
-    listen(fnc = function(){ console.log(`Server listening on: http://${this.host}:${this.port}${this.endpoint}`); }){
+    listen(fnc = function(){ console.log(`Server listening on: http`+ (this.sslKey != null && this.sslCert != null ? "s" : "") +`://${this.host}:${this.port}${this.endpoint}`); }){
         this.server.listen(this.port, this.host, this.listenCallback, fnc.bind(this));
     }
 }
@@ -159,8 +176,8 @@ class Mysql{
         this.options = options;
         this.conn = mysql.createConnection(this.options);
 
-        this.conn.connect();
-        setInterval(this.saveConn.bind(this), 1000);
+        this.conn.connect(); 
+        setInterval(this.saveConn.bind(this), 10000);
     }
 
     async query(sql, options){
