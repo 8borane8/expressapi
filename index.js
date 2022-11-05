@@ -203,12 +203,6 @@ class JsonToken{
             return null;
         }
     }
-
-    tryGetPayload(){
-        try{
-            return JSON.parse(Buffer.from(token.split(".")[0], "base64"));
-        }catch{ return {}; }
-    }
 }
 
 class WebSocket{
@@ -237,6 +231,11 @@ module.exports.Mysql = Mysql;
 module.exports.JsonToken = JsonToken;
 module.exports.WebSocket = WebSocket;
 
+function tryGetJsonWebTokenPayload(token){
+    try{
+        return JSON.parse(Buffer.from(token.split(".")[0], "base64"));
+    }catch{ return {}; }
+}
 
 function request(url, options = null, callback = null){
     options = options == null ? {
@@ -304,7 +303,7 @@ function escapeWhiteSpaceAndNullValues(arg){
 function sha256(text){ return CryptoJS.SHA256(text).toString(); }
 function sha512(text){ return CryptoJS.SHA512(text).toString(); }
 
-
+module.exports.tryGetJsonWebTokenPayload = tryGetJsonWebTokenPayload;
 module.exports.request = request;
 module.exports.encodeBody = encodeBody;
 module.exports.escapeWhiteSpaceAndNullValues = escapeWhiteSpaceAndNullValues;
