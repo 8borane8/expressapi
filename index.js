@@ -7,10 +7,13 @@ const CryptoJS = require("crypto-js");
 const WebSocketServer = require('ws');
 
 class Server{
-    constructor(host = "0.0.0.0", port = 3000, endpoint = ""){
+    constructor(port = 3000, endpoint = "", host = "0.0.0.0", sllKey = null, sllCert = null){
         this.host = host;
         this.port = port;
         this.endpoint = endpoint;
+
+        if(!this.endpoint.startsWith("/")){ this.endpoint = "/" + this.endpoint; }
+        while(this.endpoint.endsWith("/")){ this.endpoint = this.endpoint.slice(0, -1); }
 
         this.routes = {
             "get": {},
@@ -18,7 +21,17 @@ class Server{
             "options": {}
         };
         this.middlewares = [];
-        this.server = http.createServer(this.requestListener);
+
+        if(sllKey != null && sllCert != null){
+            this.server = https.createServer(this.requestListener, {
+                key, sslKey,
+                cert: sllCert
+            });
+        }else{
+            this.server = http.createServer(this.requestListener);
+        }
+
+        this.server.this = this;
     }
 
     isEmpty(str){
@@ -33,24 +46,24 @@ class Server{
     }
 
     get(route, fnc){
+        if(!route.startsWith("/")){ route = "/" + route; }
+        while(route.endsWith("/")){ route = route.slice(0, -1); }
+        if(Object.keys(this.routes.get).includes(this.endpoint + route)){ throw "This endpoint already exist !" }
         this.routes.get[this.endpoint + route] = fnc;
-        this.updateConfig();
+        this.server.this = this;
     }
 
     post(route, fnc){
+        if(!route.startsWith("/")){ route = "/" + route; }
+        while(route.endsWith("/")){ route = route.slice(0, -1); }
+        if(Object.keys(this.routes.post).includes(this.endpoint + route)){ throw "This endpoint already exist !" }
         this.routes.post[this.endpoint + route] = fnc;
-        this.updateConfig();
+        this.server.this = this;
     }
-
-    options(route, fnc){
-        this.routes.options[this.endpoint + route] = fnc;
-        this.updateConfig();
-    }
-
 
     use(fnc){
         this.middlewares.push(fnc);
-        this.updateConfig();
+        this.server.this = this;
     }
 
     requestListener(req, res){
@@ -63,11 +76,11 @@ class Server{
             req.body = Buffer.concat(req.body).toString();
             try { req.body = JSON.parse(req.body); }catch{}
 
-
             res.status = function(code){
                 res.statusCode = code;
                 return res;
             }
+
             res.send = function(content){
                 if(content.constructor === ({}).constructor){
                     res.setHeader("Content-Type", "application/json")
@@ -95,69 +108,49 @@ class Server{
             }
     
             req.query = {};
-            req.params = {};
     
             if(req.url.split("?").length == 2){
-                
                 for(let x of req.url.split("?")[1].split("&")){
                     req.query[x.split("=")[0]] = this.this.isEmpty(x.split("=")[1]) ? undefined : x.split("=")[1];
                 }
                 req.url = req.url.split("?")[0];
             }
 
-            if(this.this.routes[req.method.toLowerCase()][req.url] == undefined){
-                if(this.this.routes[req.method.toLowerCase()][req.url + "/"] == undefined){
-                    let final_url = "";
-                    let paths = req.url.split("/").filter(part => part != "");
-                    let endpoints = Object.keys(this.this.routes[req.method.toLowerCase()]);
-                    for(let i = 0; i < endpoints; i++){
-                        endpoints[i] = endpoints[i].split("/").filter(part => part != "");
-                    }
+            let routes = this.this.routes[req.method.toLowerCase()];
+            let url = req.url;
+            while(url.endsWith("/")){ url = url.slice(0, -1); }
+            while(url.includes("//")){ url = url.replaceAll("//", "/"); }
 
-                    for(let endpoint of endpoints){
-                        endpoint = endpoint.split("/").filter(part => part != "")
-                        if(endpoint.length == paths.length){
-                            for(let i = 0; i <= paths.length; i++){
-                                if(i == paths.length){
-                                    final_url = "/" + endpoint.join("/");
-                                    break;
-                                }
-
-                                if(endpoint[i] == paths[i]){
-                                    continue;
-                                }
-                                
-                                if(endpoint[i].startsWith(":")){
-                                    req.params[endpoint[i].split(":")[1]] = paths[i];
-                                    continue;
-                                }
-                                final_url = "";
-                                req.params = {};
-                                break;
-                            }
-                            if(final_url != ""){ return this.this.routes[req.method.toLowerCase()][final_url](req, res);}
-                        }
-                        
-                    }
-                    res.status(404).send({ success: false, error: "Endpoint not found !" });
-                }else{
-                    this.this.routes[req.method.toLowerCase()][req.url + "/"](req, res);
-                }
-            }else{
-                this.this.routes[req.method.toLowerCase()][req.url](req, res);
+            if(Object.keys(routes).includes(req.url)){
+                return routes[req.url](req, res);
             }
 
+            for(let endpoint of Object.keys(routes)){
+                let endpointParts = endpoint.slice(1).split("/");
+                let urlParts = url.slice(1).split("/");
+                if(endpointParts.length != urlParts.length){ continue; }
 
-
+                let isValid = true;
+                req.params = {};
+                for(let index = 0; index < endpointParts.length; index++){
+                    if(endpointParts[index].startsWith(":")){
+                        req.params[endpointParts[index].slice(1)] = urlParts[index];
+                        continue;
+                    }else if(endpointParts[index] == urlParts[index]){ continue; }
+                    else{
+                        isValid = false;
+                        break;
+                    }
+                }
+                if(isValid){ return routes[endpoint](req, res); }
+            }
+            
+            return res.status(404).send({ success: false, error: "Endpoint not found !" });
         });
     }
 
-    listen(fnc = function(){ console.log(`Server listening on: http://${this.host}:${this.port}/${this.endpoint}`); }){
+    listen(fnc = function(){ console.log(`Server listening on: http://${this.host}:${this.port}${this.endpoint}`); }){
         this.server.listen(this.port, this.host, this.listenCallback, fnc.bind(this));
-    }
-
-    updateConfig(){
-        this.server.this = this;
     }
 }
 
@@ -210,6 +203,12 @@ class JsonToken{
             return null;
         }
     }
+
+    tryGetPayload(){
+        try{
+            return JSON.parse(Buffer.from(token.split(".")[0], "base64"));
+        }catch{ return {}; }
+    }
 }
 
 class WebSocket{
@@ -239,7 +238,7 @@ module.exports.JsonToken = JsonToken;
 module.exports.WebSocket = WebSocket;
 
 
-module.exports.request = function(url = "http://www.exemple.com/", options = null, callback = null){
+function request(url, options = null, callback = null){
     options = options == null ? {
         method: 'GET',
         headers: {}
@@ -261,13 +260,14 @@ module.exports.request = function(url = "http://www.exemple.com/", options = nul
                 reject(error);
             });
         }
-        var req;
-        try{
-            req = http.request(url, options, default_callback);
-        }catch{
+
+        let req;
+        if(url.startsWith("https://")){
             req = https.request(url, options, default_callback);
+        }else{
+            req = http.request(url, options, default_callback);
         }
-            
+
         if(options.body != undefined){
             req.end(options.body);
         }else{
@@ -276,7 +276,7 @@ module.exports.request = function(url = "http://www.exemple.com/", options = nul
     });
 }
 
-module.exports.encodeBody = function(dic){
+function encodeBody(dic){
     let body = [];
     for(let property of Object.keys(dic)){
         body.push(encodeURIComponent(property) + "=" + encodeURIComponent(dic[property]));
@@ -284,7 +284,7 @@ module.exports.encodeBody = function(dic){
     return body.join("&");
 }
 
-module.exports.escapeWhiteSpaceAndNullValues = function(arg){
+function escapeWhiteSpaceAndNullValues(arg){
     try{
         if(arg == undefined){
             return "";
@@ -301,7 +301,12 @@ module.exports.escapeWhiteSpaceAndNullValues = function(arg){
     }
 }
 
-module.exports.sha256 = function(text){ return CryptoJS.SHA256(text).toString(); }
-module.exports.sha512 = function(text){ return CryptoJS.SHA512(text).toString(); }
-module.exports.b64UrlEncode = function(text){ return CryptoJS.enc.Base64url.stringify(CryptoJS.enc.Utf8.parse(text)); }
-module.exports.b64UrlDecode = function(text){ return CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64url.parse(text)); }
+function sha256(text){ return CryptoJS.SHA256(text).toString(); }
+function sha512(text){ return CryptoJS.SHA512(text).toString(); }
+
+
+module.exports.request = request;
+module.exports.encodeBody = encodeBody;
+module.exports.escapeWhiteSpaceAndNullValues = escapeWhiteSpaceAndNullValues;
+module.exports.sha256 = sha256;
+module.exports.sha512 = sha512;
