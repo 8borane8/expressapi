@@ -1,6 +1,6 @@
 const https = require("https");
 const mysql = require("mysql");
-const fs = require("fs");
+const fs = require("node:fs");
 const http = require("http");
 const mime = require('mime');
 const CryptoJS = require("crypto-js");
@@ -29,8 +29,8 @@ class Server{
 
         if(this.sslKey != null && this.sslCert != null){
             this.server = https.createServer(this.requestListener, {
-                key: this.sslKey,
-                cert: this.sslCert
+                key: fs.readFileSync(this.sslKey),
+                cert: fs.readFileSync(this.sslCert)
             });
         }else{
             this.server = http.createServer(this.requestListener);
