@@ -142,6 +142,7 @@ class Server{
                 return routes[req.url](req, res);
             }
 
+            let valid_endpoint = null;
             for(let endpoint of Object.keys(routes)){
                 let endpointParts = endpoint.slice(1).split("/");
                 let urlParts = url.slice(1).split("/");
@@ -159,8 +160,10 @@ class Server{
                         break;
                     }
                 }
-                if(isValid){ return routes[endpoint](req, res); }
+                if(isValid && (valid_endpoint == null || valid_endpoint.split("/").filter(e => !e.startsWith(":")).length < endpoint.split("/").filter(e => !e.startsWith(":")).length)){ valid_endpoint = endpoint; }
             }
+
+            if(valid_endpoint != null){ return routes[valid_endpoint](req, res); }
             
             this.this.notFoundEndpointFunction(req, res);
         });
