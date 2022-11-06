@@ -1,6 +1,6 @@
 const https = require("https");
 const mysql = require("mysql");
-const fs = require("node:fs");
+const fs = require("fs");
 const http = require("http");
 const mime = require('mime');
 const CryptoJS = require("crypto-js");
