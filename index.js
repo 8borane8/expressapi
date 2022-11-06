@@ -28,10 +28,10 @@ class Server{
         this.middlewares = [];
 
         if(this.sslKey != null && this.sslCert != null){
-            this.server = https.createServer(this.requestListener, {
+            this.server = https.createServer({
                 key: fs.readFileSync(this.sslKey),
                 cert: fs.readFileSync(this.sslCert)
-            });
+            }, this.requestListener);
         }else{
             this.server = http.createServer(this.requestListener);
         }
