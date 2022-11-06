@@ -52,7 +52,7 @@ class Server{
 
     get(route, fnc){
         if(!route.startsWith("/")){ route = "/" + route; }
-        while(route.endsWith("/")){ route = route.slice(0, -1); }
+        while(route.length != 1 && route.endsWith("/")){ route = route.slice(0, -1); }
         if(Object.keys(this.routes.get).includes(this.endpoint + route)){ throw "This endpoint already exist !" }
         this.routes.get[this.endpoint + route] = fnc;
         this.server.this = this;
@@ -60,7 +60,7 @@ class Server{
 
     post(route, fnc){
         if(!route.startsWith("/")){ route = "/" + route; }
-        while(route.endsWith("/")){ route = route.slice(0, -1); }
+        while(route.length != 1 && route.endsWith("/")){ route = route.slice(0, -1); }
         if(Object.keys(this.routes.post).includes(this.endpoint + route)){ throw "This endpoint already exist !" }
         this.routes.post[this.endpoint + route] = fnc;
         this.server.this = this;
@@ -135,11 +135,10 @@ class Server{
 
             let routes = this.this.routes[req.method.toLowerCase()];
             let url = req.url;
-            while(url.endsWith("/")){ url = url.slice(0, -1); }
+            while(url.length != 1 && url.endsWith("/")){ url = url.slice(0, -1); }
             while(url.includes("//")){ url = url.replaceAll("//", "/"); }
-
-            if(Object.keys(routes).includes(req.url)){
-                return routes[req.url](req, res);
+            if(Object.keys(routes).includes(url)){
+                return routes[url](req, res);
             }
 
             let valid_endpoint = null;
@@ -149,10 +148,10 @@ class Server{
                 if(endpointParts.length != urlParts.length){ continue; }
 
                 let isValid = true;
-                req.params = {};
+                let params = {};
                 for(let index = 0; index < endpointParts.length; index++){
                     if(endpointParts[index].startsWith(":")){
-                        req.params[endpointParts[index].slice(1)] = urlParts[index];
+                        params[endpointParts[index].slice(1)] = urlParts[index];
                         continue;
                     }else if(endpointParts[index] == urlParts[index]){ continue; }
                     else{
@@ -160,7 +159,7 @@ class Server{
                         break;
                     }
                 }
-                if(isValid && (valid_endpoint == null || valid_endpoint.split("/").filter(e => !e.startsWith(":")).length < endpoint.split("/").filter(e => !e.startsWith(":")).length)){ valid_endpoint = endpoint; }
+                if(isValid && (valid_endpoint == null || valid_endpoint.split("/").filter(e => !e.startsWith(":")).length < endpoint.split("/").filter(e => !e.startsWith(":")).length)){ valid_endpoint = endpoint; req.params = params; }
             }
 
             if(valid_endpoint != null){ return routes[valid_endpoint](req, res); }
