@@ -224,7 +224,9 @@ class WebSocket{
 
         this.ws.on('connection', function(socket){
             this.onConnect(socket);
-            socket.on('message', this.onMessage);
+            socket.on('message', function(data){
+                this.onMessage(data, socket);
+            }.bind(this));
         }.bind(this));
 
         fnc.bind(this)();
