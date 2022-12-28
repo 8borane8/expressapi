@@ -51,18 +51,20 @@ class Server{
     }
 
     get(route, fnc){
+        route = this.endpoint + route;
         if(!route.startsWith("/")){ route = "/" + route; }
-        while(route.length != 1 && route.endsWith("/")){ route = route.slice(0, -1); }
-        if(Object.keys(this.routes.get).includes(this.endpoint + route)){ throw "This endpoint already exist !" }
-        this.routes.get[this.endpoint + route] = fnc;
+        while(route.endsWith("/")){ route = route.slice(0, -1); }
+        if(Object.keys(this.routes.post).includes(this.endpoint + route)){ throw "This endpoint already exist !" }
+        this.routes.get[route] = fnc;
         this.server.this = this;
     }
 
     post(route, fnc){
+        route = this.endpoint + route;
         if(!route.startsWith("/")){ route = "/" + route; }
-        while(route.length != 1 && route.endsWith("/")){ route = route.slice(0, -1); }
+        while(route.endsWith("/")){ route = route.slice(0, -1); }
         if(Object.keys(this.routes.post).includes(this.endpoint + route)){ throw "This endpoint already exist !" }
-        this.routes.post[this.endpoint + route] = fnc;
+        this.routes.post[route] = fnc;
         this.server.this = this;
     }
 
