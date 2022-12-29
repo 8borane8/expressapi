@@ -10,9 +10,9 @@ async function httpServerRequestListener(req, res){
     req.body = [];
     req.on('error', async function(err){
         console.error(err);
-    }).on('data', async function(chunk){
+    }.bind(this)).on('data', async function(chunk){
         req.body.push(chunk);
-    }).on('end', async function(){
+    }.bind(this)).on('end', async function(){
         req.body = Buffer.concat(req.body).toString();
         try { req.body = JSON.parse(req.body); }catch{}
 
@@ -95,7 +95,7 @@ async function httpServerRequestListener(req, res){
         if(valid_endpoint != null){ return routes[valid_endpoint](req, res); }
         
         this.notFoundEndpointFunction(req, res);
-    });
+    }.bind(this));
 }
 
 class HttpServer{
@@ -122,9 +122,9 @@ class HttpServer{
             this.server = https.createServer({
                 key: fs.readFileSync(this.sslKey),
                 cert: fs.readFileSync(this.sslCert)
-            }, this.requestListener);
+            }, httpServerRequestListener.bind(this));
         }else{
-            this.server = http.createServer(this.requestListener);
+            this.server = http.createServer(httpServerRequestListener.bind(this));
         }
 
         this.server.this = this;
@@ -151,7 +151,7 @@ class HttpServer{
     setNotFoundEndpointFunction(fnc){ this.notFoundEndpointFunction = fnc.bind(this); }
 
     listen(fnc = function(){ console.log(`HttpServer listening on: http`+ (this.sslKey != null && this.sslCert != null ? "s" : "") +`://localhost:${this.port}${this.endpoint}`); }){
-        this.server.listen(this.port, "0.0.0.0", httpServerRequestListener.bind(this), fnc.bind(this));
+        this.server.listen(this.port, "0.0.0.0", 511, fnc.bind(this));
     }
 }
 
