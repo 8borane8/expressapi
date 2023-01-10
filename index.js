@@ -58,7 +58,7 @@ async function httpServerRequestListener(req, res){
 
         if(req.url.split("?").length == 2){
             for(let x of req.url.split("?")[1].split("&")){
-                req.query[x.split("=")[0]] = escapeWhiteSpaceAndNullValues(x.split("=")[1]) ? undefined : x.split("=")[1];
+                req.query[x.split("=")[0]] = x.split("=")[1];
             }
             req.url = req.url.split("?")[0];
         }
