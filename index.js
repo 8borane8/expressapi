@@ -67,7 +67,9 @@ async function httpServerRequestListener(req, res){
         let url = req.url;
         while(url.length != 1 && url.endsWith("/")){ url = url.slice(0, -1); }
         while(url.includes("//")){ url = url.replaceAll("//", "/"); }
-        if(Object.keys(routes).includes(url)){
+        if(routes == undefined){
+            return res.status(200).end();
+        }else if(Object.keys(routes).includes(url)){
             return routes[url](req, res);
         }
 
