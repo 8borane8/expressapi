@@ -290,19 +290,18 @@ function encodeBody(dic){
     return body.join("&");
 }
 
-function escapeWhiteSpaceAndNullValues(arg){
+function isWhitespacesOrNull(arg){
     try{
         if(arg == undefined){
-            return "";
+            return true;
         }else if(arg == null){
-            return "";
+            return true;
         }else if(typeof arg != "string"){
-            return argToString(arg.toString());
+            return true;
         }
 
-        return arg.replaceAll(" ", "").replaceAll("ㅤ", "");
+        return arg.replaceAll(" ", "").replaceAll("ㅤ", "") == "";
     }catch(err){
-        console.log(err)
         return true;
     }
 }
