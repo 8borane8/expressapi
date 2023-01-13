@@ -224,10 +224,10 @@ class WebSocket{
     listen(fnc = function(){ console.log(`WebSocket listening on: ws://localhost:${this.port}`); }){
         this.ws = new WebSocketServer({ port: this.port });
 
-        this.ws.on('connection', function(socket){
-            this.onConnect(socket);
+        this.ws.on('connection', function(socket, req){
+            this.onConnect(socket, req);
             socket.on('message', function(data){
-                this.onMessage(data, socket);
+                this.onMessage(data, socket, req);
             }.bind(this));
         }.bind(this));
 
