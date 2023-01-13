@@ -312,6 +312,6 @@ function sha512(text){ return CryptoJS.SHA512(text).toString(); }
 module.exports.tryGetJsonWebTokenPayload = tryGetJsonWebTokenPayload;
 module.exports.request = request;
 module.exports.encodeBody = encodeBody;
-module.exports.escapeWhiteSpaceAndNullValues = escapeWhiteSpaceAndNullValues;
+module.exports.isWhitespacesOrNull = isWhitespacesOrNull;
 module.exports.sha256 = sha256;
 module.exports.sha512 = sha512;
