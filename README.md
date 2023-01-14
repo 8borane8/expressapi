@@ -31,7 +31,7 @@ __httpServer__.listen();
 
     `request` : fonction pour effectuer des requêtes HTTP
     `encodeBody` : fonction pour encoder les données de la requête en JSON
-    `escapeWhiteSpaceAndNullValues` : fonction pour échapper les espaces et les valeurs nulles dans une chaîne
+    `isWhitespacesOrNull` : fonction pour vérifier si un objet est vide ou null
     `sha256` : fonction pour générer un hash SHA-256
     `sha512` : fonction pour générer un hash SHA-512
     `b64UrlEncode` : fonction pour encoder une chaîne en base64 pour une utilisation dans une URL
