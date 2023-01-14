@@ -1,49 +1,40 @@
-
 # ExpressApi
 
-ExpressApi est une alternative simple d'utilisation et performante a express ou des frameworks similaires, il ajoute de plus pleins de fonctions utiles pour vos projets web !
-
-## Exemple
+ExpressApi est une alternative simple à utiliser et performante à express ou à des frameworks similaires. Il ajoute également de nombreuses fonctions utiles pour vos projets web !
+Exemple d'utilisation
 
 ```js
 const expressapi = require("@borane/expressapi");
-const config = require("./config.json");
-const fs = require("node:fs");
+const fs = require("fs");
 
-const api = new expressapi.Server();
-const mysql = new expressapi.Mysql({
-    host: config.database.host,
-    user: config.database.user,
-    password: config.database.password,
-    database: config.database.database,
-});
+const __httpServer__ = new expressapi.HttpServer();
 
-api.get("/", async function(req, res){
+__httpServer__.get("/", async function(req, res){
     res.status(200).send("Welcome to ExpressApi");
 });
 
-for(let route of fs.readdirSync("./routes").filter(r => r.endsWith(".js"))){
-    require(`./routes/${route}`).execute(api, mysql);
-}
+fs.readdirSync("./routes").filter(r => r.endsWith(".js").forEach(function(route){
+    require(`./routes/${route}`)(__httpServer__, mysql);
+});
 
-api.listen();
-```
-
-### Classes
-```
-    Server =>
-    Mysql =>
-    JsonToken =>
-    WebSocket =>
+__httpServer__.listen();
 ```
 
-### Fonctions
-```
-    request =>
-    encodeBody =>
-    escapeWhiteSpaceAndNullValues =>
-    sha256 =>
-    sha512 =>
-    b64UrlEncode =>
-    b64UrlDecode =>
-```
+## Classes
+
+    `Server` : classe principale pour créer un serveur web
+    `Mysql` : classe pour établir une connexion à une base de données MySQL
+    `JsonToken` : classe pour générer et valider des jetons JSON
+    `WebSocket` : classe pour gérer les connexions WebSocket
+
+## Fonctions
+
+    `request` : fonction pour effectuer des requêtes HTTP
+    `encodeBody` : fonction pour encoder les données de la requête en JSON
+    `escapeWhiteSpaceAndNullValues` : fonction pour échapper les espaces et les valeurs nulles dans une chaîne
+    `sha256` : fonction pour générer un hash SHA-256
+    `sha512` : fonction pour générer un hash SHA-512
+    `b64UrlEncode` : fonction pour encoder une chaîne en base64 pour une utilisation dans une URL
+    `b64UrlDecode` : fonction pour décoder une chaîne encodée en base64 pour une utilisation dans une URL
+
+Avec ExpressAPI, vous pouvez facilement créer un serveur web avec des fonctionnalités supplémentaires telles que la gestion de la base de données MySQL, la génération de jetons JSON et la gestion des connexions WebSocket. Il est facile à utiliser et performant, ce qui en fait un choix idéal pour vos projets web.
