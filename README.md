@@ -13,7 +13,7 @@ __httpServer__.get("/", async function(req, res){
     res.status(200).send("Welcome to ExpressApi");
 });
 
-fs.readdirSync("./routes").filter(r => r.endsWith(".js").forEach(function(route){
+fs.readdirSync("./routes").filter(r => r.endsWith(".js")).forEach(function(route){
     require(`./routes/${route}`)(__httpServer__, mysql);
 });
 
