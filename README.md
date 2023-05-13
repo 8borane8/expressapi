@@ -1,40 +1,50 @@
 # ExpressApi
 
-ExpressApi est une alternative simple à utiliser et performante à express ou à des frameworks similaires. Il ajoute également de nombreuses fonctions utiles pour vos projets web !
-Exemple d'utilisation
+ExpressApi est une solution alternative à Express ou d'autres frameworks similaires.
+Il est à la fois simple d'utilisation et performant en plus d'être simple d'utilisation à prendre en main.
+Voici un exemple d'utilisation :
+
+## HttpServer
 
 ```js
 const expressapi = require("@borane/expressapi");
-const fs = require("fs");
-
-const __httpServer__ = new expressapi.HttpServer();
+const __httpServer__ = new expressapi.HttpServer(5050, "/api");
 
 __httpServer__.get("/", async function(req, res){
     res.status(200).send("Welcome to ExpressApi");
 });
 
-fs.readdirSync("./routes").filter(r => r.endsWith(".js")).forEach(function(route){
-    require(`./routes/${route}`)(__httpServer__, mysql);
-});
-
 __httpServer__.listen();
 ```
 
-## Classes
+## JsonToken
 
-    `Server` : classe principale pour créer un serveur web
-    `Mysql` : classe pour établir une connexion à une base de données MySQL
-    `JsonToken` : classe pour générer et valider des jetons JSON
-    `WebSocket` : classe pour gérer les connexions WebSocket
+```js
+const expressapi = require("@borane/expressapi");
+const __jwt__ = new expressapi.JsonToken("SECRET");
+
+__jwt__.sign({ id: 0 });
+__jwt__.verify("TOKEN");
+```
+
+## Mysql
+
+```js
+const expressapi = require("@borane/expressapi");
+const __mysql__ = new expressapi.Mysql({
+    host     : config.mysql.host,
+    port     : config.mysql.port,
+    user     : config.mysql.user,
+    password : config.mysql.password,
+    database : config.mysql.database,
+});
+
+await __mysql__.query("SELECT * FROM users WHERE id = ?", [1]);
+```
+    
 
 ## Fonctions
-
     `request` : fonction pour effectuer des requêtes HTTP
     `encodeBody` : fonction pour encoder les données de la requête en JSON
-    `isWhitespacesOrNull` : fonction pour vérifier si un objet est vide ou null
-    `sha256` : fonction pour générer un hash SHA-256
     `sha512` : fonction pour générer un hash SHA-512
-    `b64UrlEncode` : fonction pour encoder une chaîne en base64 pour une utilisation dans une URL
-    `b64UrlDecode` : fonction pour décoder une chaîne encodée en base64 pour une utilisation dans une URL
-
-Avec ExpressAPI, vous pouvez facilement créer un serveur web avec des fonctionnalités supplémentaires telles que la gestion de la base de données MySQL, la génération de jetons JSON et la gestion des connexions WebSocket. Il est facile à utiliser et performant, ce qui en fait un choix idéal pour vos projets web.
+    `sha256` : fonction pour générer un hash SHA-256
