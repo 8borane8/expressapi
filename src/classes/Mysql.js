@@ -13,7 +13,7 @@ class Mysql{
             this.conn.query(sql, options, function(err, results){
                 return err ? reject(err) : resolve(results);
             });
-        });
+        }.bind(this));
     }
 
     saveConn(){
