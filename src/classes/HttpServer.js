@@ -102,7 +102,7 @@ class HttpServer{
         }
 
         res.send = function(content){
-            if(typeof(content) != String)
+            if(typeof(content) != "string")
             {
                 try {
                     content = JSON.stringify(content);
