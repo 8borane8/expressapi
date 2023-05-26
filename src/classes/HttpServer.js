@@ -102,11 +102,14 @@ class HttpServer{
         }
 
         res.send = function(content){
-            try {
-                content = JSON.stringify(content);
-                res.setHeader("Content-Type", "application/json");
-            }catch{}
-
+            if(typeof(content) != String)
+            {
+                try {
+                    content = JSON.stringify(content);
+                    res.setHeader("Content-Type", "application/json");
+                }catch{}
+            }
+            
             res.end(content);
         };
 
