@@ -36,11 +36,13 @@ class HttpServer{
     }
 
     registerRoute(route, fnc, method){
-        if(!urlRegex.test(route)){
+        
+        if(route != "/" && !urlRegex.test(route)){
             throw new Error(`Invalid route format. Please provide a valid format: ${urlRegex}`);
         }
+        
+        route = route == "/" ? this.endpoint : this.endpoint + route;
 
-        route = this.endpoint + route;
         if(Object.keys(this.routes[method]).includes(route)){
             throw new Error("Route already registered for this HTTP method.");
         }
