@@ -1,6 +1,6 @@
 {
     "name": "@borane/expressapi",
-    "version": "1.2.5",
+    "version": "1.2.6",
     "description": "ExpressApi est une alternative simple d'utilisation et performante a express ou des frameworks similaires, il ajoute de plus pleins de fonctions utiles pour vos projets web !",
     "main": "src/index.js",
     "keywords": [
