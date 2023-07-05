@@ -138,14 +138,6 @@ class HttpServer{
         });
 
         req.once("end", async function(){
-            if(!Object.keys(this.routes).includes(req.method)){
-                res.status(400).send({
-                    success: false,
-                    error: "400 Method not supported."
-                });
-                return;
-            }
-
             req.url = decodeURI(req.url);
             req.url = req.url.replaceAll(/\/{2,}/g, "/");
             req.url = req.url.replace(/([^\/]+)\/$/, "$1");
@@ -170,6 +162,14 @@ class HttpServer{
 
             if(req.method == "OPTIONS"){
                 res.status(200).end();
+                return;
+            }
+
+            if(!Object.keys(this.routes).includes(req.method)){
+                res.status(400).send({
+                    success: false,
+                    error: "400 Method not supported."
+                });
                 return;
             }
             
