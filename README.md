@@ -8,30 +8,42 @@ Voici un exemple d'utilisation :
 
 ```js
 const expressapi = require("@borane/expressapi");
-const __httpServer__ = new expressapi.HttpServer(5050, "/api");
+const httpServer = new expressapi.HttpServer(5050, "/api");
 
-__httpServer__.get("/", async function(req, res){
+httpServer.get("/", async function(_req, res){
     res.status(200).send("Welcome to ExpressApi");
 });
 
-__httpServer__.listen();
+httpServer.listen();
+```
+
+## Request
+
+```js
+const expressapi = require("@borane/expressapi");
+const request = new expressapi.Request("", {
+    headers: {},
+    body: ""
+});
+
+console.log(await request.send());
 ```
 
 ## JsonToken
 
 ```js
 const expressapi = require("@borane/expressapi");
-const __jwt__ = new expressapi.JsonToken("SECRET");
+const jsonToken = new expressapi.JsonToken("SECRET");
 
-__jwt__.sign({ id: 0 });
-__jwt__.verify("TOKEN");
+jsonToken.sign({ id: 0 });
+jsonToken.verify("TOKEN");
 ```
 
 ## Mysql
 
 ```js
 const expressapi = require("@borane/expressapi");
-const __mysql__ = new expressapi.Mysql({
+const mysql = new expressapi.Mysql({
     host     : config.mysql.host,
     port     : config.mysql.port,
     user     : config.mysql.user,
@@ -39,12 +51,10 @@ const __mysql__ = new expressapi.Mysql({
     database : config.mysql.database,
 });
 
-await __mysql__.query("SELECT * FROM users WHERE id = ?", [1]);
+await mysql.query("SELECT * FROM users WHERE id = ?", [1]);
 ```
     
 
 ## Fonctions
-    `request` : fonction pour effectuer des requêtes HTTP
-    `encodeBody` : fonction pour encoder les données de la requête en JSON
-    `sha512` : fonction pour générer un hash SHA-512
     `sha256` : fonction pour générer un hash SHA-256
+    `sha512` : fonction pour générer un hash SHA-512
