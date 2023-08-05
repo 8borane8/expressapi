@@ -4,7 +4,7 @@
     "description": "ExpressApi est une alternative simple d'utilisation et performante a express ou des frameworks similaires, il ajoute de plus pleins de fonctions utiles pour vos projets web !",
     "author": "borane",
     "homepage": "https://github.com/8borane8/expressapi",
-    "main": "src/index.js",
+    "main": "./src/index.js",
     "repository": {
 		"type": "git",
 		"url": "https://github.com/8borane8/expressapi.git"
