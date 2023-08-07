@@ -1,7 +1,7 @@
-import https from "https";
-import http from "http";
+const https = require("https");
+const http = require("http");
 
-export class Request{
+class Request{
     constructor(url, options = {}){
         this.url = url;
 
@@ -47,3 +47,5 @@ export class Request{
         });
     }
 }
+
+module.exports.Request = Request;

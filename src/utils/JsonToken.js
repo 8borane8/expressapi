@@ -1,6 +1,6 @@
-import CryptoJS from "crypto-js";
+const { SHA256 } = require("crypto-js");
 
-export class JsonToken{
+class JsonToken{
     #secret;
 
     constructor(secret){
@@ -10,7 +10,7 @@ export class JsonToken{
     sign(payload){
         const jsonPayload = JSON.stringify(payload);
         const b64Payload = Buffer.from(jsonPayload).toString("base64").replace(/=+$/, "");
-        const hash = CryptoJS.SHA256(b64Payload + this.#secret).toString();
+        const hash = SHA256(b64Payload + this.#secret).toString();
 
         return `${b64Payload}.${hash}`;
     }
@@ -21,7 +21,7 @@ export class JsonToken{
             return null;
 
         
-        if(CryptoJS.SHA256(parts[0] + this.#secret).toString() == parts[1]){
+        if(SHA256(parts[0] + this.#secret).toString() == parts[1]){
             const stringPayload = Buffer.from(parts[0], "base64").toString("utf-8");
             return JSON.parse(stringPayload);
         }
@@ -29,3 +29,5 @@ export class JsonToken{
         return null;
     }
 }
+
+module.exports.JsonToken = JsonToken;

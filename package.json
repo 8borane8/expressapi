@@ -1,6 +1,6 @@
 {
     "name": "@borane/expressapi",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "ExpressApi est une alternative simple d'utilisation et performante a express ou des frameworks similaires, il ajoute de plus pleins de fonctions utiles pour vos projets web !",
     "author": "borane",
     "homepage": "https://github.com/8borane8/expressapi",
@@ -24,6 +24,5 @@
 		"crypto-js": "^4.1.1",
         "mime": "^3.0.0",
         "mysql": "^2.18.1"
-	},
-	"type": "module"
+	}
 }
