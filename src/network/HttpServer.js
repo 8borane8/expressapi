@@ -1,8 +1,8 @@
-import http from "http";
-import mime from "mime";
-import fs from "fs";
+const http = require("http");
+const mime = require("mime");
+const fs = require("fs");
 
-export class HttpServer{
+class HttpServer{
     static #regexUrl = /^(?:\/[^\/]+)+$/;
 
     #middlewares = [];
@@ -14,7 +14,6 @@ export class HttpServer{
         PATCH  : {}
     };
     #server
-
 
     constructor(port, endpoint = ""){
         this.port = port;
@@ -38,7 +37,6 @@ export class HttpServer{
         this.#routes[method][route] = fnc;
     }
 
-
     get(route, fnc){
         this.#registerRoute(route, fnc, "GET");
     }
@@ -61,7 +59,7 @@ export class HttpServer{
 
     use(middleware){
         if(!middleware instanceof Function)
-            throw new Error(`The middleware must be a function.`);
+            throw new Error("The middleware must be a function.");
 
         this.#middlewares.push(middleware);
     }
@@ -191,3 +189,5 @@ export class HttpServer{
         });
     }
 }
+
+module.exports.HttpServer = HttpServer;

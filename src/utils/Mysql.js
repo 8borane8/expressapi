@@ -1,6 +1,6 @@
-import mysql from "mysql";
+const mysql = require("mysql");
 
-export class Mysql{
+class Mysql{
     #conn;
 
     constructor(options){
@@ -22,3 +22,5 @@ export class Mysql{
         });
     }
 }
+
+module.exports.Mysql = Mysql;
