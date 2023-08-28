@@ -16,7 +16,7 @@ class Mysql{
 
     query(query, options){
         return new Promise((resolve, reject) => {
-            this.conn.query(query, options, function(err, res){
+            this.#conn.query(query, options, function(err, res){
                 err ? reject(err) : resolve(res);
             });
         });
