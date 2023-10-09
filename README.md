@@ -17,7 +17,24 @@ httpServer.get("/", async function(_req, res){
 httpServer.listen();
 ```
 
-## Request
+## RequestHelper
+
+```js
+const expressapi = require("@borane/expressapi");
+const response = await new expressapi.RequestHelper.request({
+    url: "http://ip-api.com/json",
+
+    proxy: {
+        auth: "<user>:<pass>",
+        host: "<ip>",
+        port: 80
+    }
+});
+
+console.log(response);
+```
+
+## Request (obsolète)
 
 ```js
 const expressapi = require("@borane/expressapi");

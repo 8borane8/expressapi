@@ -1,3 +1,4 @@
+const { RequestHelper } = require("./network/RequestHelper.js");
 const { HttpServer } = require("./network/HttpServer.js");
 const { JsonToken } = require("./utils/JsonToken.js");
 const { Request } = require("./network/Request.js");
@@ -16,6 +17,7 @@ module.exports = {
     sha256,
     sha512,
 
+    RequestHelper,
     HttpServer,
     JsonToken,
     Request,
