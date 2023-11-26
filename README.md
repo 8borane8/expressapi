@@ -34,18 +34,6 @@ const response = await new expressapi.RequestHelper.request({
 console.log(response);
 ```
 
-## Request (obsolète)
-
-```js
-const expressapi = require("@borane/expressapi");
-const request = new expressapi.Request("", {
-    headers: {},
-    body: ""
-});
-
-console.log(await request.send());
-```
-
 ## JsonToken
 
 ```js
@@ -71,7 +59,6 @@ const mysql = new expressapi.Mysql({
 await mysql.query("SELECT * FROM users WHERE id = ?", [1]);
 ```
     
-
 ## Fonctions
     `sha256` : fonction pour générer un hash SHA-256
     `sha512` : fonction pour générer un hash SHA-512
