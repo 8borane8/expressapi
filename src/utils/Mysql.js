@@ -1,6 +1,6 @@
 const mysql = require("mysql");
 
-class Mysql{
+module.exports = class Mysql{
     #conn;
 
     constructor(options){
@@ -14,13 +14,9 @@ class Mysql{
         this.#conn.query("SELECT 1");
     }
 
-    query(query, options){
-        return new Promise((resolve, reject) => {
-            this.#conn.query(query, options, function(err, res){
-                err ? reject(err) : resolve(res);
-            });
-        });
+    query(query, options = []){
+        return new Promise((resolve, reject) => 
+            this.#conn.query(query, options, (err, res) => err ? reject(err) : resolve(res))
+        );
     }
 }
-
-module.exports.Mysql = Mysql;

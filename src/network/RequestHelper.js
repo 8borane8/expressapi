@@ -1,7 +1,7 @@
 const https = require("https");
 const http = require("http");
 
-class RequestHelper{
+module.exports = class RequestHelper{
     #headers;
     #proxy;
 
@@ -27,7 +27,7 @@ class RequestHelper{
         }else{
             options.hostname = url.match(/https?:\/\/([\w.-]+)/)[1];
             options.port = url.startsWith("https://") ? 443 : 80;
-            options.path = url.match(/https?:\/\/[\w.-]+(\/[\w.\/-]*)?/)[1] ?? "/";
+            options.path = encodeURI(url.match(/https?:\/\/[\w.-]+(.*)/)[1] ?? "/");
         }
 
         return new Promise((resolve, reject) => {
@@ -46,8 +46,11 @@ class RequestHelper{
               });
       
             req.once("error", (error) => reject(error));
-            req.end(body);
 
+            if(Object.entries(options.headers).some(o => o[0].toLocaleLowerCase() == "content-type" && o[1] == "application/json"))
+              body = JSON.stringify(body);
+
+            req.end(body);
         });
     }
 
@@ -60,5 +63,3 @@ class RequestHelper{
         return await RequestHelper.request(options);
     }
 }
-
-module.exports.RequestHelper = RequestHelper;
