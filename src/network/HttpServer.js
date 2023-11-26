@@ -100,7 +100,7 @@ module.exports = class HttpServer{
     }
 
     static #defaultEndpointNotFoundFunction(_req, res){
-        res.status(404).send({
+        res.status(404).json({
             success: false,
             error: "404 Endpoint not found."
         });
@@ -122,7 +122,7 @@ module.exports = class HttpServer{
         };
 
         res.redirect = url => {
-            res.writeHead(302, { "Location": url });
+            res.writeHead(307, { "Location": url });
             res.end();
         };
 
