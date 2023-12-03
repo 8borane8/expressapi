@@ -173,7 +173,7 @@ module.exports = class HttpServer{
                 return;
             }
             
-            if(this.#routes.get(req.method).includes(req.url)){
+            if(this.#routes.get(req.method).has(req.url)){
                 const route = this.#routes.get(req.method).get(req.url);
 
                 for(const middleware of route.middlewares){
