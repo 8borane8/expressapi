@@ -11,7 +11,8 @@ module.exports = class RequestHelper{
     }
 
     static request({url, method, headers, body, proxy}){
-        const protocol = proxy != undefined ? http : url.startsWith("https://") ? https : http;
+        const urlObject = new URL(url);
+        const protocol = proxy == undefined ? http : urlObject.protocol == "http:" ?  http : https;
 
         const options = {
             method: method ?? "GET",
@@ -25,9 +26,9 @@ module.exports = class RequestHelper{
 
             options.headers["Proxy-Authorization"] = `Basic ${Buffer.from(proxy.auth).toString("base64")}`;
         }else{
-            options.hostname = url.match(/https?:\/\/([\w.-]+)/)[1];
-            options.port = url.startsWith("https://") ? 443 : 80;
-            options.path = encodeURI(url.match(/https?:\/\/[\w.-]+(.*)/)[1] ?? "/");
+            options.hostname = urlObject.hostname;
+            options.port = urlObject.port != "" ? urlObject.port : urlObject.protocol == "http:" ?  80 : 443;
+            options.path = urlObject.pathname + urlObject.search
         }
 
         return new Promise((resolve, reject) => {
