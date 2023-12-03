@@ -37,7 +37,7 @@ module.exports = class HttpServer{
     }
 
     #registerRoute(route, requestListener, middlewares, method){
-        if(!(route == "" && HttpServer.#regexUrl.test(route)))
+        if(!(route == "/" || HttpServer.#regexUrl.test(route)))
             throw new Error(`Invalid route format. Please provide a valid format: ${HttpServer.#regexUrl}`);
         
         if(!requestListener instanceof Function)
@@ -46,14 +46,14 @@ module.exports = class HttpServer{
         if(!middlewares instanceof Array)
             throw new Error("The middlewares must be an array.");
 
-        if(!this.#routes.has(method))
-            this.#routes.set(method, new Array());
-        
         route = this.#endpoint + (route == "/" ? "" : route);
 
-        if(this.#routes.get(method).includes(route))
-            throw new Error(`Route '${route}' already registered for the '${method}' method.`);
-
+        if(this.#routes.has(method)){
+            if(this.#routes.get(method).has(route))
+                throw new Error(`Route '${route}' already registered for the '${method}' method.`);
+        }else
+            this.#routes.set(method, new Map());
+        
         this.#routes.get(method).set(route, {
             requestListener,
             middlewares
