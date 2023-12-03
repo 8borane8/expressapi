@@ -185,17 +185,18 @@ module.exports = class HttpServer{
                 return;
             }
 
-            const routesParts = this.#routes.get(req.method).map(r => r.slice(1).split("/"));
+            const routesParts = Array.from(this.#routes.get(req.method).keys())
+                .map(r => r.slice(1).split("/"));
+
             const urlParts = req.url.slice(1).split("/");
 
             for(const routeParts of routesParts.filter(p => p.length == urlParts.length)){
                 const params = {};
                 for(let i = 0; i < routeParts.length; i++){
-                    if(routeParts[i].startsWith(":")){
+                    if(routeParts[i].startsWith(":"))
                         params[routeParts[i].slice(1)] = urlParts[i];
-                    }else if(routeParts[i] != urlParts[i]){
+                    else if(routeParts[i] != urlParts[i])
                         break;
-                    }
                     
                     if(i == routeParts.length - 1){
                         const route = this.#routes.get(req.method).get(`/${routeParts.join("/")}`);
