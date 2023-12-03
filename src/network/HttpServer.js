@@ -200,6 +200,7 @@ module.exports = class HttpServer{
                     
                     if(i == routeParts.length - 1){
                         const route = this.#routes.get(req.method).get(`/${routeParts.join("/")}`);
+                        req.params = params;
 
                         for(const middleware of route.middlewares){
                             if(await middleware(req, res) == true)
