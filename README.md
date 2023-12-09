@@ -25,7 +25,8 @@ const response = await new expressapi.RequestHelper.request({
     url: "http://ip-api.com/json",
 
     proxy: {
-        auth: "<user>:<pass>",
+        auth: "<user>:<pass>", // null
+        protocal: "http",
         host: "<ip>",
         port: 80
     }

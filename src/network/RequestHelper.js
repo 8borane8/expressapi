@@ -5,62 +5,62 @@ module.exports = class RequestHelper{
     #headers;
     #proxy;
 
-    constructor({ headers = {}, proxy = null } = {}){
+    constructor({ headers = {}, proxy = null } = {}) {
         this.#headers = headers;
         this.#proxy = proxy;
     }
 
-    static request({url, method, headers, body, proxy}){
+    static request({ url, method = "GET", headers = {}, body = null, proxy = null }) {
         const urlObject = new URL(url);
-        const protocol = proxy == undefined ? http : urlObject.protocol == "http:" ?  http : https;
+        const protocol = (proxy == null ? urlObject.protocol == "http:" : proxy.protocol == "http") ? http : https;
 
         const options = {
-            method: method ?? "GET",
-            headers: headers ?? {}
+            method,
+            headers,
+            hostname: proxy == null ? urlObject.hostname : proxy.hostname,
+            port: proxy == null ? (urlObject.port == "" ? undefined : urlObject.port) : proxy.port,
+            path: proxy == null ? urlObject.pathname + urlObject.search : url,
         };
 
-        if(proxy != undefined){
-            options.hostname = proxy.host;
-            options.port = proxy.port;
-            options.path = url;
-
+        if(proxy != null && proxy.auth != null)
             options.headers["Proxy-Authorization"] = `Basic ${Buffer.from(proxy.auth).toString("base64")}`;
-        }else{
-            options.hostname = urlObject.hostname;
-            options.port = urlObject.port != "" ? urlObject.port : urlObject.protocol == "http:" ?  80 : 443;
-            options.path = urlObject.pathname + urlObject.search
-        }
 
         return new Promise((resolve, reject) => {
+            const req = protocol.request(options, res => {
+                const chunks = new Array();
 
-            const req = protocol.request(options, (res) => {
-                const body = [];
-          
-                res.once("error", (error) => reject(error));
-                res.on("data", (chunk) => body.push(chunk));
+                res.on("data", chunks.push);
+                res.once("error", reject);
+
                 res.on("end", () => {
-                    const responseText = Buffer.concat(body).toString();
+                    const responseText = Buffer.concat(chunks).toString();
                     const contentType = res.headers["content-type"] ?? "";
 
                     resolve(contentType.startsWith("application/json") ? JSON.parse(responseText) : responseText);
-                });
-              });
-      
-            req.once("error", (error) => reject(error));
+                });                
+            });
 
-            if(Object.entries(options.headers).some(o => o[0].toLocaleLowerCase() == "content-type" && o[1] == "application/json"))
-              body = JSON.stringify(body);
+            req.once("error", reject);
 
-            req.end(body);
+            if(body != null){
+                const contentType = Object.entries(headers).find(o => o[0].toLowerCase() == "content-type") ?? null;
+
+                if(contentType != null && contentType[1].startsWith("application/json"))
+                    req.write(JSON.stringify(body));
+                else
+                    req.write(body);
+            }
+
+            req.end();
         });
     }
 
-    async request(options){
-        options.headers = { ...this.#headers, ...(options.headers ?? {}) };
+    async request(options) {
+        options.headers = { ...this.#headers, ...(options.headers || {}) };
 
-        if((options.proxy ?? null) == null && this.#proxy != null)
+        if(!options.proxy && this.#proxy)
             options.proxy = this.#proxy;
 
         return await RequestHelper.request(options);
     }
-}
+};
