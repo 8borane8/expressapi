@@ -25,12 +25,21 @@ module.exports = class RequestHelper{
         if(proxy != null && proxy.auth != null)
             options.headers["Proxy-Authorization"] = `Basic ${Buffer.from(proxy.auth).toString("base64")}`;
 
+        if(body != null){
+            const contentType = Object.entries(headers).find(o => o[0].toLowerCase() == "content-type") ?? null;
+
+            if(contentType != null && contentType[1].startsWith("application/json"))
+                body = JSON.stringify(body);
+
+            options.headers["Content-Length"] = body.length;
+        }
+
         return new Promise((resolve, reject) => {
             const req = protocol.request(options, res => {
                 const chunks = new Array();
 
-                res.on("data", chunks.push);
-                res.once("error", reject);
+                res.on("data", chunk => chunks.push(chunk));
+                res.once("error", err => reject(err));
 
                 res.on("end", () => {
                     const responseText = Buffer.concat(chunks).toString();
@@ -40,18 +49,8 @@ module.exports = class RequestHelper{
                 });                
             });
 
-            req.once("error", reject);
-
-            if(body != null){
-                const contentType = Object.entries(headers).find(o => o[0].toLowerCase() == "content-type") ?? null;
-
-                if(contentType != null && contentType[1].startsWith("application/json"))
-                    req.write(JSON.stringify(body));
-                else
-                    req.write(body);
-            }
-
-            req.end();
+            req.once("error", err => reject(err));
+            req.end(body);
         });
     }
 
