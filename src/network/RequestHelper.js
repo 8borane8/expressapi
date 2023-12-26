@@ -1,3 +1,4 @@
+const { EventEmitter } = require("events");
 const https = require("https");
 const http = require("http");
 
@@ -10,7 +11,7 @@ module.exports = class RequestHelper{
         this.#proxy = proxy;
     }
 
-    static request({ url, method = "GET", headers = {}, body = null, proxy = null }) {
+    static #getOptions({ url, method = "GET", headers = {}, body = null, proxy = null }){
         const urlObject = new URL(url);
         const protocol = (proxy == null ? urlObject.protocol == "http:" : proxy.protocol == "http") ? http : https;
 
@@ -34,14 +35,46 @@ module.exports = class RequestHelper{
             options.headers["Content-Length"] = body.length;
         }
 
+        return [options, body, protocol];
+    }
+
+    static requestSync(rawOptions) {
+        const [options, body, protocol] = RequestHelper.#getOptions(rawOptions);
+
+        const eventEmitter = new EventEmitter();
+
+        const req = protocol.request(options, res => {
+            res.on("data", chunk => eventEmitter.emit("data", chunk.toString()));
+            res.once("error", error => eventEmitter.emit("error", error));
+            res.once("end", () => eventEmitter.emit("end"));                
+        });
+
+        req.once("error", error => eventEmitter.emit("error", error));
+        req.end(body);
+
+        return eventEmitter;
+    }
+
+    requestSync(options) {
+        options.headers = { ...this.#headers, ...(options.headers || {}) };
+
+        if(!options.proxy && this.#proxy)
+            options.proxy = this.#proxy;
+
+        return RequestHelper.requestSync(options);
+    }
+
+    static request(rawOptions) {
+        const [options, body, protocol] = RequestHelper.#getOptions(rawOptions);
+
         return new Promise((resolve, reject) => {
             const req = protocol.request(options, res => {
                 const chunks = new Array();
 
                 res.on("data", chunk => chunks.push(chunk));
-                res.once("error", err => reject(err));
+                res.once("error", error => reject(error));
 
-                res.on("end", () => {
+                res.once("end", () => {
                     const responseText = Buffer.concat(chunks).toString();
                     const contentType = res.headers["content-type"] ?? "";
 
@@ -49,17 +82,17 @@ module.exports = class RequestHelper{
                 });                
             });
 
-            req.once("error", err => reject(err));
+            req.once("error", error => reject(error));
             req.end(body);
         });
     }
 
-    async request(options) {
+    request(options) {
         options.headers = { ...this.#headers, ...(options.headers || {}) };
 
         if(!options.proxy && this.#proxy)
             options.proxy = this.#proxy;
 
-        return await RequestHelper.request(options);
+        return RequestHelper.request(options);
     }
 };
