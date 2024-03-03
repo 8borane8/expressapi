@@ -155,7 +155,7 @@ module.exports = class HttpServer{
                 req.url = splitedUrl[0];
 
                 splitedUrl[1].split("&").map(p => p.split("="))
-                    .forEach((key, value) => req.query[key] = value);
+                    .forEach(arr => req.query[arr[0]] = arr[1]);
             }
 
             for(const middleware of this.#middlewares){
