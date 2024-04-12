@@ -46,7 +46,7 @@ module.exports = class HttpServer{
         if(!middlewares instanceof Array)
             throw new Error("The middlewares must be an array.");
 
-        route = this.#endpoint + (route == "/" ? "" : route);
+        route = this.#endpoint == "" ? route : this.#endpoint + (route == "/" ? "" : route);
 
         if(this.#routes.has(method)){
             if(this.#routes.get(method).has(route))
