@@ -4,11 +4,11 @@ const JsonToken = require("./utils/JsonToken.js");
 const Mysql = require("./utils/Mysql.js");
 const { SHA256, SHA512 } = require("crypto-js");
 
-function sha256(payload){
+function sha256(payload) {
     return SHA256(payload).toString();
 };
 
-function sha512(payload){
+function sha512(payload) {
     return SHA512(payload).toString();
 };
 

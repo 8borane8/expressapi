@@ -2,7 +2,7 @@ const { EventEmitter } = require("events");
 const https = require("https");
 const http = require("http");
 
-module.exports = class RequestHelper{
+module.exports = class RequestHelper {
     #headers;
     #proxy;
 
@@ -11,7 +11,7 @@ module.exports = class RequestHelper{
         this.#proxy = proxy;
     }
 
-    static #getOptions({ url, method = "GET", headers = {}, body = null, proxy = null }){
+    static #getOptions({ url, method = "GET", headers = {}, body = null, proxy = null, raw = false }) {
         const urlObject = new URL(url);
         const protocol = (proxy == null ? urlObject.protocol == "http:" : proxy.protocol == "http") ? http : https;
 
@@ -21,15 +21,16 @@ module.exports = class RequestHelper{
             hostname: proxy == null ? urlObject.hostname : proxy.hostname,
             port: proxy == null ? (urlObject.port == "" ? undefined : urlObject.port) : proxy.port,
             path: proxy == null ? urlObject.pathname + urlObject.search : url,
+            raw
         };
 
-        if(proxy != null && proxy.auth != null)
+        if (proxy != null && proxy.auth != null)
             options.headers["Proxy-Authorization"] = `Basic ${Buffer.from(proxy.auth).toString("base64")}`;
 
-        if(body != null){
+        if (body != null) {
             const contentType = Object.entries(headers).find(o => o[0].toLowerCase() == "content-type") ?? null;
 
-            if(contentType != null && contentType[1].startsWith("application/json"))
+            if (contentType != null && contentType[1].startsWith("application/json"))
                 body = JSON.stringify(body);
 
             options.headers["Content-Length"] = body.length;
@@ -39,14 +40,14 @@ module.exports = class RequestHelper{
     }
 
     static requestSync(rawOptions) {
-        const [options, body, protocol] = RequestHelper.#getOptions(rawOptions);
+        const [options, body, protocol, raw] = RequestHelper.#getOptions(rawOptions);
 
         const eventEmitter = new EventEmitter();
 
         const req = protocol.request(options, res => {
-            res.on("data", chunk => eventEmitter.emit("data", chunk.toString()));
+            res.on("data", chunk => eventEmitter.emit("data", raw ? chunk : chunk.toString()));
             res.once("error", error => eventEmitter.emit("error", error));
-            res.once("end", () => eventEmitter.emit("end"));                
+            res.once("end", () => eventEmitter.emit("end"));
         });
 
         req.once("error", error => eventEmitter.emit("error", error));
@@ -58,14 +59,14 @@ module.exports = class RequestHelper{
     requestSync(options) {
         options.headers = { ...this.#headers, ...(options.headers || {}) };
 
-        if(!options.proxy && this.#proxy)
+        if (!options.proxy && this.#proxy)
             options.proxy = this.#proxy;
 
         return RequestHelper.requestSync(options);
     }
 
     static request(rawOptions) {
-        const [options, body, protocol] = RequestHelper.#getOptions(rawOptions);
+        const [options, body, protocol, raw] = RequestHelper.#getOptions(rawOptions);
 
         return new Promise((resolve, reject) => {
             const req = protocol.request(options, res => {
@@ -75,11 +76,14 @@ module.exports = class RequestHelper{
                 res.once("error", error => reject(error));
 
                 res.once("end", () => {
+                    if (raw)
+                        return Buffer.concat(chunks);
+
                     const responseText = Buffer.concat(chunks).toString();
                     const contentType = res.headers["content-type"] ?? "";
 
                     resolve(contentType.startsWith("application/json") ? JSON.parse(responseText) : responseText);
-                });                
+                });
             });
 
             req.once("error", error => reject(error));
@@ -90,7 +94,7 @@ module.exports = class RequestHelper{
     request(options) {
         options.headers = { ...this.#headers, ...(options.headers || {}) };
 
-        if(!options.proxy && this.#proxy)
+        if (!options.proxy && this.#proxy)
             options.proxy = this.#proxy;
 
         return RequestHelper.request(options);

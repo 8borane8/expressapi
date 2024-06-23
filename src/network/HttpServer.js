@@ -2,7 +2,7 @@ const http = require("http");
 const mime = require("mime");
 const fs = require("fs");
 
-module.exports = class HttpServer{
+module.exports = class HttpServer {
     static #regexUrl = /^(?:\/[^\/]+)+$/;
 
     #port;
@@ -14,99 +14,99 @@ module.exports = class HttpServer{
 
     #server;
 
-    constructor(port, endpoint = ""){
+    constructor(port, endpoint = "") {
         this.#port = port;
         this.#endpoint = endpoint;
 
-        if(!(this.#endpoint == "" || HttpServer.#regexUrl.test(this.#endpoint)))
+        if (!(this.#endpoint == "" || HttpServer.#regexUrl.test(this.#endpoint)))
             throw new Error(`Invalid endpoint format. Please provide a valid format: ${HttpServer.#regexUrl}`);
 
         this.#server = http.createServer(this.#requestListener.bind(this));
     }
 
-    get port(){
+    get port() {
         return this.#port;
     }
 
-    get endpoint(){
+    get endpoint() {
         return this.#endpoint;
     }
 
-    set endpointNotFoundFunction(endpointNotFoundFunction){
+    set endpointNotFoundFunction(endpointNotFoundFunction) {
         this.#endpointNotFoundFunction = endpointNotFoundFunction;
     }
 
-    #registerRoute(route, requestListener, middlewares, method){
-        if(!(route == "/" || HttpServer.#regexUrl.test(route)))
+    #registerRoute(route, requestListener, middlewares, method) {
+        if (!(route == "/" || HttpServer.#regexUrl.test(route)))
             throw new Error(`Invalid route format. Please provide a valid format: ${HttpServer.#regexUrl}`);
-        
-        if(!requestListener instanceof Function)
+
+        if (!requestListener instanceof Function)
             throw new Error("The requestListener must be a function.");
 
-        if(!middlewares instanceof Array)
+        if (!middlewares instanceof Array)
             throw new Error("The middlewares must be an array.");
 
         route = this.#endpoint == "" ? route : this.#endpoint + (route == "/" ? "" : route);
 
-        if(this.#routes.has(method)){
-            if(this.#routes.get(method).has(route))
+        if (this.#routes.has(method)) {
+            if (this.#routes.get(method).has(route))
                 throw new Error(`Route '${route}' already registered for the '${method}' method.`);
-        }else
+        } else
             this.#routes.set(method, new Map());
-        
+
         this.#routes.get(method).set(route, {
             requestListener,
             middlewares
         });
     }
 
-    get(route, requestListener, middlewares = []){
+    get(route, requestListener, middlewares = []) {
         this.#registerRoute(route, requestListener, middlewares, "GET");
     }
 
-    post(route, requestListener, middlewares = []){
+    post(route, requestListener, middlewares = []) {
         this.#registerRoute(route, requestListener, middlewares, "POST");
     }
 
-    put(route, requestListener, middlewares = []){
+    put(route, requestListener, middlewares = []) {
         this.#registerRoute(route, requestListener, middlewares, "PUT");
     }
 
-    patch(route, requestListener, middlewares = []){
+    patch(route, requestListener, middlewares = []) {
         this.#registerRoute(route, requestListener, middlewares, "PATCH");
     }
 
-    delete(route, requestListener, middlewares = []){
+    delete(route, requestListener, middlewares = []) {
         this.#registerRoute(route, requestListener, middlewares, "DELETE");
     }
 
-    use(middleware){
-        if(!middleware instanceof Function)
+    use(middleware) {
+        if (!middleware instanceof Function)
             throw new Error("The middleware must be a function.");
 
         this.#middlewares.push(middleware);
     }
 
-    #defaultListenCallback(){
+    #defaultListenCallback() {
         console.log(`HttpServer listening on: http://127.0.0.1:${this.#port}${this.#endpoint}`);
     }
 
-    listen(fnc = this.#defaultListenCallback){
+    listen(fnc = this.#defaultListenCallback) {
         this.#server.listen(this.#port, "0.0.0.0", 511, fnc.bind(this));
     }
 
-    stop(){
+    stop() {
         this.#server.close();
     }
 
-    static #defaultEndpointNotFoundFunction(_req, res){
+    static #defaultEndpointNotFoundFunction(_req, res) {
         res.status(404).json({
             success: false,
             error: "404 Endpoint not found."
         });
     }
 
-    static #addFunctionsToResponse(res){
+    static #addFunctionsToResponse(res) {
         res.status = code => {
             res.statusCode = code;
             return res;
@@ -134,7 +134,7 @@ module.exports = class HttpServer{
         }
     }
 
-    #requestListener(req, res){
+    #requestListener(req, res) {
         HttpServer.#addFunctionsToResponse(res);
 
         req.body = new Array();
@@ -147,37 +147,37 @@ module.exports = class HttpServer{
 
             req.body = Buffer.concat(req.body).toString();
             if (Object.keys(req.headers).includes("content-type") && req.headers["content-type"].startsWith("application/json"))
-                req.body = JSON.parse(req.body);
+                try { req.body = JSON.parse(req.body); } catch { }
 
             req.query = {};
             const splitedUrl = req.url.split("?");
-            if(splitedUrl.length == 2){
+            if (splitedUrl.length == 2) {
                 req.url = splitedUrl[0];
 
                 splitedUrl[1].split("&").map(p => p.split("="))
                     .forEach(arr => req.query[arr[0]] = arr[1]);
             }
 
-            for(const middleware of this.#middlewares){
-                if(await middleware(req, res) == true)
+            for (const middleware of this.#middlewares) {
+                if (await middleware(req, res) == true)
                     return;
             }
 
-            if(req.method == "OPTIONS"){
+            if (req.method == "OPTIONS") {
                 res.status(200).end();
                 return;
             }
 
-            if(!this.#routes.has(req.method)){
+            if (!this.#routes.has(req.method)) {
                 this.#endpointNotFoundFunction(req, res);
                 return;
             }
-            
-            if(this.#routes.get(req.method).has(req.url)){
+
+            if (this.#routes.get(req.method).has(req.url)) {
                 const route = this.#routes.get(req.method).get(req.url);
 
-                for(const middleware of route.middlewares){
-                    if(await middleware(req, res) == true)
+                for (const middleware of route.middlewares) {
+                    if (await middleware(req, res) == true)
                         return;
                 }
 
@@ -190,20 +190,20 @@ module.exports = class HttpServer{
 
             const urlParts = req.url.slice(1).split("/");
 
-            for(const routeParts of routesParts.filter(p => p.length == urlParts.length)){
+            for (const routeParts of routesParts.filter(p => p.length == urlParts.length)) {
                 const params = {};
-                for(let i = 0; i < routeParts.length; i++){
-                    if(routeParts[i].startsWith(":"))
+                for (let i = 0; i < routeParts.length; i++) {
+                    if (routeParts[i].startsWith(":"))
                         params[routeParts[i].slice(1)] = urlParts[i];
-                    else if(routeParts[i] != urlParts[i])
+                    else if (routeParts[i] != urlParts[i])
                         break;
-                    
-                    if(i == routeParts.length - 1){
+
+                    if (i == routeParts.length - 1) {
                         const route = this.#routes.get(req.method).get(`/${routeParts.join("/")}`);
                         req.params = params;
 
-                        for(const middleware of route.middlewares){
-                            if(await middleware(req, res) == true)
+                        for (const middleware of route.middlewares) {
+                            if (await middleware(req, res) == true)
                                 return;
                         }
 
@@ -212,7 +212,7 @@ module.exports = class HttpServer{
                     }
                 }
             }
-            
+
             this.#endpointNotFoundFunction(req, res);
         });
     }
